@@ -1,6 +1,6 @@
 {
   "name": "co-store",
-  "displayName": "Co-Store",
+  "displayName": "MM Store Connexion",
   "description": "Lance et supervise shopify theme dev directement depuis VS Code.",
   "version": "0.0.1",
   "publisher": "Moon-Moon",
