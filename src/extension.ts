@@ -193,6 +193,18 @@ function registerCommands(context: vscode.ExtensionContext): void {
 
             const cwd = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
             localUrl = ''; shareUrl = ''; adminUrl = ''; buffer = '';
+
+            // Tue tout process qui occupe le port 9292 avant de lancer
+            await new Promise<void>(resolve => {
+                const killer = spawn(
+                    'cmd', ['/c', 'for /f "tokens=5" %a in (\'netstat -ano ^| findstr :9292\') do taskkill /F /PID %a'],
+                    { shell: false }
+                );
+                killer.on('close', () => resolve());
+                killer.on('error', () => resolve());
+                setTimeout(resolve, 2000); // max 2s
+            });
+
             isConnected = true;
             vscode.commands.executeCommand('setContext', 'co-store.isConnected', true);
             provider.refresh();
