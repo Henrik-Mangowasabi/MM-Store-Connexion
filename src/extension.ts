@@ -194,13 +194,18 @@ function registerCommands(context: vscode.ExtensionContext): void {
             const cwd = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
             localUrl = ''; shareUrl = ''; adminUrl = ''; buffer = '';
 
-            // Tue tout process qui occupe le port 9292 (bloquant)
+            // Tue tout process qui occupe le port 9292 via Node.js directement
             try {
-                execSync(
-                    'for /f "tokens=5" %p in (\'netstat -aon ^| findstr "127.0.0.1:9292"\') do @taskkill /F /PID %p',
-                    { shell: 'cmd.exe', timeout: 3000 }
-                );
-                // Attend que le port soit libéré
+                const netstatOut = execSync('netstat -aon', { shell: 'cmd.exe', timeout: 3000 }).toString();
+                for (const line of netstatOut.split('\n')) {
+                    if (line.includes('127.0.0.1:9292') && line.includes('LISTENING')) {
+                        const parts = line.trim().split(/\s+/);
+                        const pid = parseInt(parts[parts.length - 1]);
+                        if (!isNaN(pid) && pid > 0) {
+                            try { process.kill(pid); } catch (_) {}
+                        }
+                    }
+                }
                 await new Promise(r => setTimeout(r, 1000));
             } catch (_) { /* port déjà libre */ }
 
