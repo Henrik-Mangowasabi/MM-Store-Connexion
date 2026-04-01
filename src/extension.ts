@@ -228,8 +228,9 @@ function registerCommands(context: vscode.ExtensionContext): void {
             outputChannel.appendLine('─────────────────────────────');
             provider.refresh();
 
-            // Fichier temp pour capturer l'output du terminal
+            // Crée le fichier log avant de le surveiller
             logFile = path.join(os.tmpdir(), `shopify-dev-${Date.now()}.log`);
+            fs.writeFileSync(logFile, '');
 
             // Lance dans un terminal VS Code (vrai TTY) avec tee vers le fichier log
             const cmd = process.platform === 'win32'
