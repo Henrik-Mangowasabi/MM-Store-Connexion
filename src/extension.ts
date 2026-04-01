@@ -11,6 +11,7 @@ let adminUrl = '';
 let outputChannel: vscode.OutputChannel;
 let lineBuffer = '';
 let hasError = false;
+let authRequested = false;
 
 let provider: ShopifyDevProvider;
 
@@ -138,8 +139,9 @@ function parseLine(line: string): void {
     // Détection du lien d'authentification Shopify → ouverture automatique
     const authMatch = clean.match(/(https?:\/\/accounts\.shopify\.[^\s]+)/);
     if (authMatch) {
+        authRequested = true;
         vscode.env.openExternal(vscode.Uri.parse(authMatch[1]));
-        vscode.window.showInformationMessage('Shopify demande une authentification — ouverture du navigateur...');
+        vscode.window.showInformationMessage('Shopify demande une authentification — connecte-toi dans le navigateur puis reclique sur ▶');
     }
 
     // Détection d'erreur
@@ -203,6 +205,7 @@ function registerCommands(context: vscode.ExtensionContext): void {
             adminUrl = '';
             lineBuffer = '';
             hasError = false;
+            authRequested = false;
             isConnected = true;
             vscode.commands.executeCommand('setContext', 'co-store.isConnected', true);
             provider.refresh();
@@ -221,15 +224,15 @@ function registerCommands(context: vscode.ExtensionContext): void {
             shopifyProcess.stderr?.on('data', onData);
 
             shopifyProcess.on('close', (code) => {
-                // Flush buffer restant
                 if (lineBuffer) { parseLine(lineBuffer); lineBuffer = ''; }
                 isConnected = false;
                 shopifyProcess = undefined;
                 vscode.commands.executeCommand('setContext', 'co-store.isConnected', false);
                 provider.refresh();
-                if (code !== 0 && code !== null) {
+                if (code !== 0 && code !== null && !authRequested) {
                     vscode.window.showErrorMessage(`shopify theme dev s'est arrêté (code ${code}).`);
                 }
+                authRequested = false;
             });
 
             shopifyProcess.on('error', (err) => {
