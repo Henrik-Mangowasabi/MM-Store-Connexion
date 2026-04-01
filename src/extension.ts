@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { spawn, ChildProcess } from 'child_process';
+import { spawn, execSync, ChildProcess } from 'child_process';
 
 // --- État global ---
 let shopifyProcess: ChildProcess | undefined;
@@ -194,15 +194,15 @@ function registerCommands(context: vscode.ExtensionContext): void {
             const cwd = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
             localUrl = ''; shareUrl = ''; adminUrl = ''; buffer = '';
 
-            // Tue tout process qui occupe le port 9292
-            await new Promise<void>(resolve => {
-                const killer = spawn('cmd', ['/c',
-                    'for /f "tokens=5" %p in (\'netstat -aon ^| findstr "127.0.0.1:9292"\') do @taskkill /F /PID %p 2>nul'
-                ], { shell: false });
-                killer.on('close', () => setTimeout(resolve, 800));
-                killer.on('error', () => setTimeout(resolve, 800));
-                setTimeout(resolve, 3000);
-            });
+            // Tue tout process qui occupe le port 9292 (bloquant)
+            try {
+                execSync(
+                    'for /f "tokens=5" %p in (\'netstat -aon ^| findstr "127.0.0.1:9292"\') do @taskkill /F /PID %p',
+                    { shell: 'cmd.exe', timeout: 3000 }
+                );
+                // Attend que le port soit libéré
+                await new Promise(r => setTimeout(r, 1000));
+            } catch (_) { /* port déjà libre */ }
 
             isConnected = true;
             vscode.commands.executeCommand('setContext', 'co-store.isConnected', true);
