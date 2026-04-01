@@ -10,6 +10,7 @@ let shareUrl = '';
 let adminUrl = '';
 let outputChannel: vscode.OutputChannel;
 let lineBuffer = '';
+let hasError = false;
 
 let provider: ShopifyDevProvider;
 
@@ -58,9 +59,13 @@ class ShopifyItem extends vscode.TreeItem {
                 break;
 
             case 'logs':
-                this.iconPath = new vscode.ThemeIcon('output');
+                this.iconPath = new vscode.ThemeIcon(
+                    hasError ? 'warning' : 'output',
+                    hasError ? new vscode.ThemeColor('problemsWarningIcon.foreground') : undefined
+                );
                 this.command = { command: 'co-store.showLogs', title: 'Voir les logs' };
-                this.tooltip = 'Ouvrir le panneau de logs';
+                this.tooltip = hasError ? 'Erreur détectée — cliquer pour voir les logs' : 'Voir les logs';
+                this.label = hasError ? 'Logs (⚠ erreur)' : 'Voir les logs';
                 break;
         }
     }
@@ -130,6 +135,10 @@ function parseLine(line: string): void {
     const shareMatch = clean.match(/(https?:\/\/\S+preview_theme_id\S*)/);
     const adminMatch = clean.match(/(https?:\/\/\S+\/admin\/themes\/\S*\/editor\S*)/);
 
+    // Détection d'erreur
+    const isErrorLine = /\b(error|erreur|failed|fail|exception)\b/i.test(clean);
+    if (isErrorLine && !hasError) { hasError = true; provider.refresh(); }
+
     let changed = false;
     if (localMatch && !localUrl) { localUrl = localMatch[1]; changed = true; }
     if (shareMatch && !shareUrl) { shareUrl = shareMatch[1]; changed = true; }
@@ -186,12 +195,12 @@ function registerCommands(context: vscode.ExtensionContext): void {
             shareUrl = '';
             adminUrl = '';
             lineBuffer = '';
+            hasError = false;
             isConnected = true;
             vscode.commands.executeCommand('setContext', 'co-store.isConnected', true);
             provider.refresh();
 
             outputChannel.clear();
-            outputChannel.show(true);
             outputChannel.appendLine(`▶ shopify theme dev -s ${storeUrl}`);
             outputChannel.appendLine('─────────────────────────────');
 
