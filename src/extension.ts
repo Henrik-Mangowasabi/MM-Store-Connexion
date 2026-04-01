@@ -230,7 +230,13 @@ function registerCommands(context: vscode.ExtensionContext): void {
                 vscode.commands.executeCommand('setContext', 'co-store.isConnected', false);
                 provider.refresh();
                 if (code !== 0 && code !== null && !authRequested) {
-                    vscode.window.showErrorMessage(`shopify theme dev s'est arrêté (code ${code}).`);
+                    outputChannel.appendLine(`\n⚠ Processus arrêté (code ${code})`);
+                    vscode.window.showErrorMessage(
+                        `shopify theme dev s'est arrêté (code ${code}).`,
+                        'Voir les logs'
+                    ).then(choice => {
+                        if (choice === 'Voir les logs') { outputChannel.show(true); }
+                    });
                 }
                 authRequested = false;
             });
