@@ -11,6 +11,7 @@ let adminUrl = '';
 let outputChannel: vscode.OutputChannel;
 let buffer = '';
 let hasError = false;
+let crashed = false;
 
 let provider: ShopifyDevProvider;
 
@@ -84,7 +85,7 @@ class ShopifyDevProvider implements vscode.TreeDataProvider<ShopifyItem> {
                     vscode.TreeItemCollapsibleState.None, 'store'
                 ),
                 new ShopifyItem(
-                    isConnected ? 'Statut: Connecté' : 'Statut: Déconnecté',
+                    isConnected ? 'Statut: Connecté' : crashed ? 'Statut: Crash — reclique ▶' : 'Statut: Déconnecté',
                     vscode.TreeItemCollapsibleState.None, 'status'
                 ),
             ];
@@ -92,7 +93,7 @@ class ShopifyDevProvider implements vscode.TreeDataProvider<ShopifyItem> {
             if (isConnected || localUrl || shareUrl || adminUrl) {
                 items.push(new ShopifyItem('Liens', vscode.TreeItemCollapsibleState.Expanded, 'links'));
             }
-            if (isConnected) {
+            if (isConnected || hasError || localUrl) {
                 items.push(new ShopifyItem('Voir les logs', vscode.TreeItemCollapsibleState.None, 'logs'));
             }
             return items;
@@ -209,7 +210,7 @@ function registerCommands(context: vscode.ExtensionContext): void {
             }
 
             const cwd = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
-            localUrl = ''; shareUrl = ''; adminUrl = ''; buffer = ''; hasError = false;
+            localUrl = ''; shareUrl = ''; adminUrl = ''; buffer = ''; hasError = false; crashed = false;
 
             // Tue tout process qui occupe le port 9292 via Node.js directement
             try {
@@ -249,6 +250,7 @@ function registerCommands(context: vscode.ExtensionContext): void {
                 vscode.commands.executeCommand('setContext', 'co-store.isConnected', false);
                 provider.refresh();
                 if (code !== 0 && code !== null && code !== 143) {
+                    crashed = true;
                     vscode.window.showErrorMessage(
                         `shopify theme dev s'est arrêté (code ${code}).`,
                         'Voir les logs'
@@ -269,7 +271,7 @@ function registerCommands(context: vscode.ExtensionContext): void {
     context.subscriptions.push(
         vscode.commands.registerCommand('co-store.disconnect', () => {
             if (shopifyProcess) { shopifyProcess.kill(); shopifyProcess = undefined; }
-            isConnected = false;
+            isConnected = false; crashed = false;
             localUrl = ''; shareUrl = ''; adminUrl = '';
             vscode.commands.executeCommand('setContext', 'co-store.isConnected', false);
             provider.refresh();
