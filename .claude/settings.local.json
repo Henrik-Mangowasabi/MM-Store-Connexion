@@ -6,7 +6,8 @@
       "Bash(npm run:*)",
       "Read(//c/Users/henri/OneDrive/Bureau/Extention/liquid-xray/media//**)",
       "Bash(cp /c/Users/henri/OneDrive/Bureau/Extention/liquid-xray/media/icon.svg /c/Users/henri/OneDrive/Bureau/Extention/co-store/media/icon.svg)",
-      "Bash(cp /c/Users/henri/OneDrive/Bureau/Extention/liquid-xray/media/icon.png /c/Users/henri/OneDrive/Bureau/Extention/co-store/media/icon.png)"
+      "Bash(cp /c/Users/henri/OneDrive/Bureau/Extention/liquid-xray/media/icon.png /c/Users/henri/OneDrive/Bureau/Extention/co-store/media/icon.png)",
+      "Read(//c/Users/henri/OneDrive/Bureau/Extention//**)"
     ],
     "additionalDirectories": [
       "C:\\Users\\henri\\OneDrive\\Bureau\\Extention\\co-store"
