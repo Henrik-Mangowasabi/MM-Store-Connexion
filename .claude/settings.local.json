@@ -4,6 +4,9 @@
       "Bash(git init:*)",
       "Bash(npm install:*)",
       "Bash(npm run:*)"
+    ],
+    "additionalDirectories": [
+      "C:\\Users\\henri\\OneDrive\\Bureau\\Extention\\co-store"
     ]
   }
 }

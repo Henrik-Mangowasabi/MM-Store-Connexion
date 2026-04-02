@@ -12,7 +12,8 @@
       "Bash(wait)",
       "Read(//c/Users/henri/AppData/Local/Temp/**)",
       "Bash(echo \"exit: $?\")",
-      "Bash(netstat -aon)"
+      "Bash(netstat -aon)",
+      "Bash(ls /c/Users/henri/OneDrive/Bureau/Extention/co-store/*.vsix)"
     ]
   }
 }
